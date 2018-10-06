@@ -1,4 +1,6 @@
 #  -*- coding: utf-8 -*-
+from policy.policyIteration import value_iteration
+
 __author__ = "Varun Nayyar <nayyarv@gmail.com>"
 
 import numpy as np
@@ -44,32 +46,6 @@ def policy_eval(policy, env, discount_factor=1.0, theta=0.00001):
     return V
 
 
-def value_iteration(env, theta=0.0001, discount_factor=1.0):
-    """
-    Value Iteration Algorithm.
-
-    Args:
-        env: OpenAI env. env.P represents the transition probabilities of the environment.
-            env.P[s][a] is a list of transition tuples (prob, next_state, reward, done).
-            env.nS is a number of states in the environment.
-            env.nA is a number of actions in the environment.
-        theta: We stop evaluation once our value function change is less than theta for all states.
-        discount_factor: Gamma discount factor.
-
-    Returns:
-        A tuple (policy, V) of the optimal policy and the optimal value function.
-    """
-
-    V = np.zeros(env.nS)
-
-    # Task 3 (or 2.5) - Ignore policy for task 2
-    policy = np.zeros([env.nS, env.nA])
-
-    # Implement!
-    return policy, V
-
-
-
 def main():
     # setup
     env = GridworldEnv()
@@ -104,21 +80,11 @@ if __name__ == '__main__':
     main()
 
 
-import pytest
-
-@pytest.fixture()
-def env():
-    return GridworldEnv()
-
-def test_value(env):
+def test_value():
+    env = GridworldEnv()
     random_policy = np.ones([env.nS, env.nA]) / env.nA
     v = policy_eval(random_policy, env)
     expected_v = np.array([0, -14, -20, -22, -14, -18, -20, -20, -20, -20, -18, -14, -22, -20, -14, 0])
     np.testing.assert_array_almost_equal(v, expected_v, decimal=2)
 
 
-def test_pol_iter(env):
-    policy, v = value_iteration(env)
-    # Test the value function
-    expected_v = np.array([0, -1, -2, -3, -1, -2, -3, -2, -2, -3, -2, -1, -3, -2, -1, 0])
-    np.testing.assert_array_almost_equal(v, expected_v, decimal=2)
