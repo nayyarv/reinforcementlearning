@@ -1,0 +1,44 @@
+create a for loop, to loop 1000 times
+
+      (IF STATEMENT, inside the loop,) generate a random number between 0 and 1 , if this number is less than 
+      Epsilon enter "exploitation mode" aka use the best bandit we have discovered so far
+      
+            (inside the if statement) get the POSITION (index) in our array of the current max value within our
+            table, this index is the bandit that is giving the best payout so far.
+            
+            (inside the if statement) set your ACTION variable equal to the index we discovered in the last 
+            statement
+            
+      (ELSE, otherwise..) if the number is greater than or equal to Epsilon, go into "exploration mode" and
+      choose a bandit at random 
+      
+          
+            (inside the if statement) generate a random number between 0 and THE_NUMBER_OF_BANDITS
+            
+            (inside the if statement) set your ACTION variable to equal to the random number we just generated.
+            
+        
+            
+      (inside the loop) feed our ACTION variable into our environment by updating it with a step generated 
+      by either of the steps above
+      
+      (inside the loop) now that we have gained some new information from our environment we want to update our 
+      Q_table. We do this using the formula: Q_n+1 = Q_n + (R - Q_n)/n or in simpler english:
+      
+      NewQvalue = OldQvalue + ((reward - OldQvalue)/numberOfTimesLeverHasBeenPulledForThisBandit)
+      
+      Lets think about the intituition of what this forumula is doing. Implement the formula in code.
+      
+      
+      (inside the loop) now that we have updated our Q table, we also need to update the table that is keeping
+      track of how many times each bandit's lever has been pulled. Do this by adding +1 in the position
+      of our currently selected bandit in the N_TABLE array
+      
+      
+(OUTSIDE the loop) once everything is done, we would like to print the Bandit with the highest score! Using
+a print statement, and numpy's argmax function, using our Q table, print the bandit with the highest
+AVERAGE payout
+      
+   
+   
+  

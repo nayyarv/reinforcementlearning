@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "starai"
+version = "0.1.0"
+description = "StarAI funn"
+authors = ["nayyarv <nayyarv@gmail.com>"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.6"
+tensorflow = "1.10.1"
+torch = "0.4.1"
+gym = "^0.10.5"
+numpy = "^1"
+scipy = "^1"
+attrs = "^18"
+click = "^7.0"
+
+[tool.poetry.dev-dependencies]
+pytest = "^3.8"
+pip = "*"
