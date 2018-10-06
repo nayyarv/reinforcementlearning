@@ -18,3 +18,11 @@ click = "^7.0"
 [tool.poetry.dev-dependencies]
 pytest = "^3.8"
 pip = "*"
+
+[[tool.poetry.source]]
+name="rlenvs"
+url="https://github.com/star-ai/rl-environments.git"
+
+[[tool.poetry.source]]
+name="gym_bandits"
+url="https://github.com/JKCooper2/gym-bandits.git"
