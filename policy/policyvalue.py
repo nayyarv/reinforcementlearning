@@ -1,6 +1,4 @@
 #  -*- coding: utf-8 -*-
-from policy.policyIteration import value_iteration
-
 __author__ = "Varun Nayyar <nayyarv@gmail.com>"
 
 import numpy as np
@@ -42,7 +40,7 @@ def policy_eval(policy, env, discount_factor=1.0, theta=0.00001):
 
             deltaV[state] = V[state] - v
             V[state] = v
-        print(V, deltaV)
+        # print(V, deltaV)
     return V
 
 

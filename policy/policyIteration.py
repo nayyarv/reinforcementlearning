@@ -1,58 +1,75 @@
+#!/usr/bin/env python3
 #  -*- coding: utf-8 -*-
-
 __author__ = "Varun Nayyar <nayyarv@gmail.com>"
 
-
 import numpy as np
+from policy.policyvalue import policy_eval
 from rlenvs.envs.gridworld import GridworldEnv
-from .policyvalue import policy_eval
 
 
-def value_iteration(env, theta=0.0001, discount_factor=1.0):
+def policy_improvement(env, policy_eval_fn=policy_eval, discount_factor=1.0):
     """
-    Value Iteration Algorithm.
+    Policy Improvement Algorithm. Iteratively evaluates and improves a policy
+    until an optimal policy is found.
 
     Args:
-        env: OpenAI env. env.P represents the transition probabilities of the environment.
-            env.P[s][a] is a list of transition tuples (prob, next_state, reward, done).
-            env.nS is a number of states in the environment.
-            env.nA is a number of actions in the environment.
-        theta: We stop evaluation once our value function change is less than theta for all states.
-        discount_factor: Gamma discount factor.
+        env: The OpenAI envrionment.
+        policy_eval_fn: Policy Evaluation function that takes 3 arguments:
+            policy, env, discount_factor.
+        discount_factor: gamma discount factor.
 
     Returns:
-        A tuple (policy, V) of the optimal policy and the optimal value function.
+        A tuple (policy, V).
+        policy is the optimal policy, a matrix of shape [S, A] where each state s
+        contains a valid probability distribution over actions.
+        V is the value function for the optimal policy.
+
     """
+    # Start with a random policy
+    old_policy = np.zeros([env.nS, env.nA])
+    policy = np.ones([env.nS, env.nA]) / env.nA
 
-    V = np.zeros(env.nS)
+    while not np.allclose(old_policy, policy):
+        # copy current policy
+        old_policy[:] = policy[:]
+        # calculate V for given policy
+        V = policy_eval_fn(policy, env)
 
-    # Task 3 (or 2.5) - Ignore policy for task 2
-    policy = np.zeros([env.nS, env.nA])
+        for state in range(env.nS):
+            # for each state, let's find all the next_states and choose the one with the highest value
+            # since we have deterministic movement, we can just work out which action is best
+            action_value_dict = {action: V[trans[0][1]] for action, trans in env.P[state].items()}
+            # since there may be more than 1 optimal action, let's search and
+            maxValue = max(action_value_dict.values())
+            for action, value in action_value_dict.items():
+                policy[state][action] = 1 if value == maxValue else 0
+            # normalise to probability in case of more than one optimal action
+            policy[state] /= np.sum(policy[state])
 
-    # Implement!
+        # break
+        print("iterating")
+
     return policy, V
 
 
 def main():
-    # policy value iteration
     env = GridworldEnv()
-    policy, v = value_iteration(env)
+
+    policy, v = policy_improvement(env)
+    print("Policy Probability Distribution:")
+    print(policy)
+    print("")
 
     print("Reshaped Grid Policy (0=up, 1=right, 2=down, 3=left):")
     print(np.reshape(np.argmax(policy, axis=1), env.shape))
     print("")
 
-    print("Value Function:")
-    print(v)
-    print("")
+    # print("Value Function:")
+    # print(v)
+    # print("")
 
     print("Reshaped Grid Value Function:")
     print(v.reshape(env.shape))
-    print("")
-
-    # Task 3, check policy
-    print("Policy Probability Distribution:")
-    print(policy)
     print("")
 
 
@@ -62,9 +79,8 @@ if __name__ == '__main__':
 
 def test_pol_iter():
     env = GridworldEnv()
-    policy, v = value_iteration(env)
+    policy, v = policy_improvement(env)
+
     # Test the value function
     expected_v = np.array([0, -1, -2, -3, -1, -2, -3, -2, -2, -3, -2, -1, -3, -2, -1, 0])
     np.testing.assert_array_almost_equal(v, expected_v, decimal=2)
-
-
