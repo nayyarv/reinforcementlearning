@@ -2,10 +2,8 @@
 
 __author__ = "Varun Nayyar <nayyarv@gmail.com>"
 
-
 import numpy as np
 from rlenvs.envs.gridworld import GridworldEnv
-from .policyvalue import policy_eval
 
 
 def value_iteration(env, theta=0.0001, discount_factor=1.0):
@@ -24,12 +22,36 @@ def value_iteration(env, theta=0.0001, discount_factor=1.0):
         A tuple (policy, V) of the optimal policy and the optimal value function.
     """
 
+    # initialise V and policy
     V = np.zeros(env.nS)
+    policy = np.zeros([env.nS, env.nA]) / env.nA
+    exValue = np.zeros(env.nA)
 
-    # Task 3 (or 2.5) - Ignore policy for task 2
-    policy = np.zeros([env.nS, env.nA])
+    deltaV = np.ones(env.nS)
+    while np.sum(deltaV ** 2) > theta:
+        for state in range(env.nS):
+            # let's work out the ex value of each action
+            exValue[:] = 0
+            for action, action_transitions in env.P[state].items():
+                # for each action taken, we have a bunch of possible state transitions outcomes
+                # in this case we have a perfect model, so we have only 1 transition, but for posterity
+                for transition, nextstate, reward, done in action_transitions:
+                    exValue[action] += transition * (reward + discount_factor * V[nextstate])
 
-    # Implement!
+            # policy is action that best maximizes exValue
+            maxVal = np.max(exValue)
+            # not all max values are unique, find and normalise
+            pol = (exValue == maxVal).astype(int)
+            # print(exValue, pol)
+            pol = pol / np.sum(pol)
+
+            # update policy
+            policy[state][:] = pol
+
+            deltaV[state] = V[state] - maxVal
+            V[state] = maxVal
+        # print(V, deltaV)
+
     return policy, V
 
 
@@ -66,5 +88,3 @@ def test_val_iter():
     # Test the value function
     expected_v = np.array([0, -1, -2, -3, -1, -2, -3, -2, -2, -3, -2, -1, -3, -2, -1, 0])
     np.testing.assert_array_almost_equal(v, expected_v, decimal=2)
-
-
