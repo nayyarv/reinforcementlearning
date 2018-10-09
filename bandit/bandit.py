@@ -3,34 +3,38 @@ import numpy as np
 import gym
 import click
 
-import gym_bandits
+import gym_bandits  # necessary for gym.make
 
 ZSCORE = 1.5
+
 
 class Qtable:
     """
     Base class to record and update Q.
     Note I use nums=0 since I've used a slightly different formulation
     """
+
     def __init__(self, num=10):
-        self.num_table=np.zeros(num)
+        self.num_table = np.zeros(num)
         self.q = np.zeros(num)
 
     def update(self, action, reward):
         raise NotImplementedError
-    
+
     def exploit(self):
         return np.argmax(self.q)
 
     def score(self):
         return np.dot(self.num_table, self.mu)
 
+
 class QAverage(Qtable):
     def update(self, action, reward):
-        self.q[action] = (self.q[action] * self.num_table[action] + reward) /(self.num_table[action]+1)
-        self.num_table[action]+=1
+        self.q[action] = (self.q[action] * self.num_table[action] + reward) / (self.num_table[action] + 1)
+        self.num_table[action] += 1
         self.mu = self.q
-    
+
+
 class QUCB(Qtable):
     """
     Uses q = mu + Z * se(mu)
@@ -38,30 +42,36 @@ class QUCB(Qtable):
     Z is 1.96 for alpha=5%, but you can adapt to affect sureness. The greater Z the smaller the
     deviance from mu and thus the higher exploitation rate. Z = 0 is the same as QAverage
     """
+
     def __init__(self, num=10):
         self.mu = np.zeros(num)
         self.ss = np.zeros(num)
         super().__init__(num)
 
     def update(self, action, reward):
-        self.mu[action] = (self.mu[action] * self.num_table[action] + reward) /(self.num_table[action]+1)
-        self.ss[action] = (self.ss[action] * self.num_table[action] + reward**2)/(self.num_table[action]+1) 
-        self.num_table[action]+=1
-        self.q[action] = self.mu[action] + ZSCORE * (np.sqrt(self.ss[action] - self.mu[action]**2))
+        self.mu[action] = (self.mu[action] * self.num_table[action] + reward) / (self.num_table[action] + 1)
+        self.ss[action] = (self.ss[action] * self.num_table[action] + reward ** 2) / (self.num_table[action] + 1)
+        self.num_table[action] += 1
+        self.q[action] = self.mu[action] + ZSCORE * (np.sqrt(self.ss[action] - self.mu[action] ** 2))
+
 
 # eps functions
 
 def exponential(value, cst=20):
-    return 1 - np.exp(-cst*value)
+    return 1 - np.exp(-cst * value)
+
 
 def invsq(value, cst=10):
-    return 1 - 1/(1+cst*x**2)
+    return 1 - 1 / (1 + cst * value ** 2)
+
 
 def linear(value, _):
     return value
 
+
 def const(value, cst=0.9):
     return cst
+
 
 epsDict = {
     "exponential": exponential,
@@ -82,8 +92,8 @@ def percDecision(value):
 @click.option("--seed", type=int, help="set exploration seed. Unset leaves it independent of banditseed")
 @click.option("--numbandits", default=10)
 @click.option("-N", default=1000)
-@click.option("--eps-func", default="const", type=click.Choice(epsDict.keys())) # overrides epsilon
-@click.option("--eps-hp", type=float, help="If eps-func takes a parameter, this sets it. Look at code") 
+@click.option("--eps-func", default="const", type=click.Choice(epsDict.keys()))  # overrides epsilon
+@click.option("--eps-hp", type=float, help="If eps-func takes a parameter, this sets it. Look at code")
 def main(method, bandit_seed, seed, numbandits, n, eps_func, eps_hp):
     N = n
     if bandit_seed:
@@ -94,7 +104,7 @@ def main(method, bandit_seed, seed, numbandits, n, eps_func, eps_hp):
             # maybe a partial?
             f = lambda y: epsDict[eps_func](y, eps_hp)
         else:
-            f =  epsDict[eps_func]
+            f = epsDict[eps_func]
         return f(x)
 
     env = gym.make('BanditTenArmedGaussian-v0')
@@ -114,7 +124,7 @@ def main(method, bandit_seed, seed, numbandits, n, eps_func, eps_hp):
 
     for i in range(N):
         # continue
-        if percDecision(eps(i/N)):
+        if percDecision(eps(i / N)):
             action = q_table.exploit()
             explCount += 1
         else:
@@ -124,8 +134,6 @@ def main(method, bandit_seed, seed, numbandits, n, eps_func, eps_hp):
         _, reward, *_ = env.step(action)
 
         q_table.update(action, reward)
-
-
 
     actuals = [mu for mu, _ in env.env.r_dist]
     truebest = np.argmax(actuals)
