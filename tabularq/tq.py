@@ -23,7 +23,7 @@ class QTable():
 
     def set_Q(self, s, a, q):
         """Q(s, a) = q: update the q value of (s, a) pair"""
-        self.Q[s][a] = max(q, self.Q[s][a])
+        self.Q[s][a] = q
 
     def get_max_a_for_Q(self, s):
         """argmax_a Q(s, a): get the action which has the highest Q in state s"""

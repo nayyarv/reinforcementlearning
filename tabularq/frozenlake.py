@@ -2,9 +2,9 @@
 __author__ = "Varun Nayyar <nayyarv@gmail.com>"
 
 
-
+import numpy as np
 import sys
-from six import StringIO, b
+from six import StringIO
 
 from gym import utils
 from gym.envs.toy_text import discrete
