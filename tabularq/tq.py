@@ -11,7 +11,7 @@ import collections
 class QTable():
     def __init__(self, num_actions=4):
         self.num_actions = num_actions
-        self.Q = collections.defaultdict(lambda: [0, 0, 0, 0])
+        self.Q = collections.defaultdict(lambda: [0] * num_actions)
 
     def get_Q(self, s, a):
         """Q(s, a): get the Q value of (s, a) pair"""
