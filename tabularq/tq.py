@@ -37,11 +37,12 @@ class QTable:
         output = []
         nS, nA = self.Q.shape
         for s, state in enumerate(self.Q):
-            output.append(f"{s:<2}: {state.round(2)}")
+            output.append(f"{s:<4}: " + " ".join(f"{x:>6.3f}" for x in state))
         return f"QTable (number of actions {nA}, states = {nS}):\n" + '\n'.join(output)
 
 
 import pytest
+
 
 @pytest.fixture()
 def Qt():
