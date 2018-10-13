@@ -13,35 +13,9 @@ Repeat (for each episode)
 """
 
 from tabularq.frozenlake import FrozenLakeEnv
-from tabularq.tq import QTable
+from tabularq.tq import QTable, Epsilon
 
 import random
-
-
-class Epsilon:
-    def __init__(self, start=1.0, end=0.01, update_decrement=0.01):
-        self.start = start
-        self.end = end
-        self.update_decrement = update_decrement
-        self._value = self.start
-        self.isTraining = True
-
-    def decrement(self, count=1):
-        self._value = max(self.end, self._value - self.update_decrement * count)
-        return self
-
-    @property
-    def value(self):
-        if self.isTraining:
-            return self._value
-        else:
-            # always explore
-            return 0
-
-    @value.setter
-    def value(self, val):
-        self._value = val
-
 
 alpha = 0.6
 gamma = 0.7
