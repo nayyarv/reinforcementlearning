@@ -32,7 +32,7 @@ def wrap_env(env):
 
 
 def sample():
-    env = wrap_env(gym.make('CartPole-v0'))
+    env = wrap_env(gym.make('CartPoleCartPole-v1'))
 
     observations = []
     for i_episode in range(1):
@@ -55,7 +55,7 @@ def sample():
 
 
 alpha = 0.2
-gamma = 0.8
+gamma = 0.99
 
 
 class Agent:
@@ -118,6 +118,9 @@ class Agent:
 
     def train(self, episodes=100, debug=False):
         self.epsilon.isTraining = True
+        maxreward = 0
+        rewardG = np.zeros(episodes)
+        eps_mat = np.zeros(episodes)
         for i in range(episodes):
             if i % (episodes / 10) == 0:
                 print(f"Episode: {i} of {episodes}, eps: {self.epsilon.value}")
@@ -139,12 +142,33 @@ class Agent:
                 # if debug: print(self.Q)
                 s = s_1
                 cumreward += reward
+            rewardG[i] = cumreward
+            eps_mat[i] = self.epsilon.value
 
-            self.epsilon.decrement(cumreward >= 100)
+            if cumreward > maxreward:
+                print(f"New max {i}:{cumreward}")
+                maxreward = cumreward
+
+            self.epsilon.decrement(cumreward >= 80)
+            # if self.epsilon.value == self.epsilon.end:
+            #     print("Eps has reached minimum, ending early, adjust decrement logic")
+            #     break
             # if reward == 1:
             #     self.epsilon.decrement()
             # else:
             #     self.epsilon.decrement(0.1)
+        from matplotlib import pyplot as plt
+        from scipy.signal import lfilter
+        print(rewardG[:i:1000])
+        dat = lfilter(np.ones(50)/50, 1, rewardG[:i])
+        plt.style.use('ggplot')
+
+        plt.plot(dat)
+        plt.plot(eps_mat*max(dat))
+        plt.title("Performance vs episode")
+        plt.savefig("plot.png")
+        plt.show()
+
 
     def run(self):
         self.env = wrap_env(self.env)
@@ -169,11 +193,11 @@ class Agent:
 
 
 def main():
-    env = gym.make('CartPole-v0')
+    env = gym.make('CartPole-v1')
     # from gym.envs.classic_control import CartPoleEnv
     agent = Agent(env, 20)
-    agent.train(episodes=100000, debug=False)
-    print(agent.Q)
+    agent.train(episodes=20000, debug=False)
+    # print(agent.Q)
     agent.run()
     # show_video()
 

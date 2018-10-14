@@ -95,8 +95,9 @@ if __name__ == '__main__':
     # agent.train(episodes=20)
     # agent.run()
 
-    agent = Agent(map_name="4x4", is_slippery=True)
+    agent = Agent(map_name="4x4", is_slippery=False)
     agent.train(episodes=1000)  # What is the good number of episodes to use? What if is_slipper is False?
+    print(agent.Q)
     agent.run()
 
     # agent = Agent(map_name="8x8", is_slippery=False)
