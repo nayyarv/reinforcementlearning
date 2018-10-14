@@ -54,8 +54,8 @@ def sample():
     show_video()
 
 
-alpha = 0.4
-gamma = 0.7
+alpha = 0.2
+gamma = 0.8
 
 
 class Agent:
@@ -64,9 +64,17 @@ class Agent:
         self.Q = QDynamicTable(nA=2)
         self.epsilon = Epsilon(start=1.0, end=0.05, update_decrement=0.002)
 
-        self.bins = self.getSuggestedBins(bins)
+        self.bins = [0, 0, 0, 0]
+        self.bins[0] = np.array([-0.1, 0, 0.1])
+        self.bins[1] = np.array([-0.75, 0, 0.75])
+        thresh = np.pi / 180 * 12
+        self.bins[2] = np.linspace(-thresh, thresh, 50)[1:-1]
+        self.bins[3] = np.linspace(-1.7, 1.7, 9)[1:-1]  # drop endpoints
+
         for bn in self.bins:
             print(bn)
+
+        # nbins = 5 * 5 * 32 * 7 = 5600
 
     def getAction(self, s):
         if self.epsilon.value > random.random():
@@ -89,11 +97,12 @@ class Agent:
                 yield s_1
 
     def getSuggestedBins(self, bins=3):
+        from matplotlib import pyplot as plt
         sample_obs = np.array(list(self.getSampleObs(1000)))
-        # for i, samp in enumerate(sample_obs.T):
-        #     plt.subplot(220 + i + 1)
-        #     plt.hist(samp, bins='auto')
-        # plt.show()
+        for i, samp in enumerate(sample_obs.T):
+            plt.subplot(220 + i + 1)
+            plt.hist(samp, bins='auto')
+        plt.show()
         percs = np.percentile(sample_obs, [2.5, 97.6], axis=0)
         # percs.T[2] = np.array([-12*np.pi/180, 12*np.pi/180])
         return [np.linspace(p[0], p[1], bins) for p in percs.T]
@@ -110,6 +119,8 @@ class Agent:
     def train(self, episodes=100, debug=False):
         self.epsilon.isTraining = True
         for i in range(episodes):
+            if i % (episodes / 10) == 0:
+                print(f"Episode: {i} of {episodes}, eps: {self.epsilon.value}")
             cumreward = 0
             done = False
             s = self.discretize(self.env.reset())
@@ -129,7 +140,7 @@ class Agent:
                 s = s_1
                 cumreward += reward
 
-            self.epsilon.decrement(cumreward >= 20)
+            self.epsilon.decrement(cumreward >= 100)
             # if reward == 1:
             #     self.epsilon.decrement()
             # else:
@@ -161,9 +172,8 @@ def main():
     env = gym.make('CartPole-v0')
     # from gym.envs.classic_control import CartPoleEnv
     agent = Agent(env, 20)
-    agent.train(episodes=50000, debug=False)
-    agent.train(episodes=1, debug=True)
-
+    agent.train(episodes=100000, debug=False)
+    print(agent.Q)
     agent.run()
     # show_video()
 
@@ -181,8 +191,8 @@ def envT():
 
 def test_digitize(envT):
     ag = Agent(envT)
-    ag.bins = [np.linspace(-1, 1,5), np.linspace(-1, 1,5),
-               np.linspace(-1, 1, 5), np.linspace(-1, 1,5)]
+    ag.bins = [np.linspace(-1, 1, 5), np.linspace(-1, 1, 5),
+               np.linspace(-1, 1, 5), np.linspace(-1, 1, 5)]
     print(ag.bins)
     # np.digitize()
     print(ag.discretize([-1, 1, 1, -1]))
