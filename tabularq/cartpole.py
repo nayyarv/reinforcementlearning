@@ -62,7 +62,7 @@ class Agent:
     def __init__(self, env, bins=10):
         self.env = env
         self.Q = QDynamicTable(nA=2)
-        self.epsilon = Epsilon(start=1.0, end=0.05, update_decrement=0.002)
+        self.epsilon = Epsilon(start=1.0, end=0.08, update_decrement=0.002)
 
         self.bins = [0, 0, 0, 0]
         self.bins[0] = np.array([-0.1, 0, 0.1])
@@ -149,7 +149,7 @@ class Agent:
                 print(f"New max {i}:{cumreward}")
                 maxreward = cumreward
 
-            self.epsilon.decrement(cumreward >= 80)
+            self.epsilon.decrement(0.1)
             # if self.epsilon.value == self.epsilon.end:
             #     print("Eps has reached minimum, ending early, adjust decrement logic")
             #     break
@@ -168,7 +168,6 @@ class Agent:
         plt.title("Performance vs episode")
         plt.savefig("plot.png")
         plt.show()
-
 
     def run(self):
         self.env = wrap_env(self.env)
@@ -194,7 +193,8 @@ class Agent:
 
 def main():
     env = gym.make('CartPole-v1')
-    # from gym.envs.classic_control import CartPoleEnv
+
+    from gym.envs.classic_control import CartPoleEnv
     agent = Agent(env, 20)
     agent.train(episodes=20000, debug=False)
     # print(agent.Q)
@@ -206,7 +206,6 @@ if __name__ == '__main__':
     main()
 
 import pytest
-
 
 @pytest.fixture
 def envT():
