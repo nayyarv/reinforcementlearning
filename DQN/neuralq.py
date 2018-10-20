@@ -18,24 +18,6 @@ epsilon = INITIAL_EPSILON
 ACTION_DICT = [np.array([1, 0]), np.array([0, 1])]
 
 
-class CartQ:
-    def __init__(self, dimin=4, dimout=2):
-        from keras import Sequential
-
-        from keras.layers import Dense, Maximum
-
-        model = Sequential()
-        # add 2 dense hidden layers. First layer must have input size
-        model.add(Dense(HIDDEN_NODES, activation='relu', input_dim=dimin))
-        model.add(Dense(HIDDEN_NODES, activation='relu'))
-        # combine the 2nd hidden layer into action nodes
-        model.add(Dense(dimout, activation='linear'))
-        # convert into a maximum so we know which action to take.
-        model.compile('adam', loss='mean_squared_error')
-
-        self.model = model
-
-
 def to_row(array):
     if array.ndim == 1:
         return array.reshape(1, len(array))
