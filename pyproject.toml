@@ -19,6 +19,9 @@ pyvirtualdisplay = "^0.2.1"
 ipython = "^7.0"
 pygame = "^1.9"
 moviepy = "^0.2.3"
+theano = "^1.0"
+keras = "^2.2"
+jupyter = "^1.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^3.8"
