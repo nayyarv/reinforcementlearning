@@ -150,6 +150,7 @@ class Agent:
             state = np.array(next_state)
 
         print(f"Numsteps : {numsteps}")
+        self.env.close()
 
 
 def main():
