@@ -11,11 +11,9 @@ TEST_FREQUENCY = 100  # Num episodes to run before visualizing test accuracy
 HIDDEN_NODES = 20
 ENV_NAME = 'CartPole-v0'
 EPISODE = 200000  # Episode limitation
-STEP = 200  # Step limitation in an episode
+MAX_STEPS = 200
 TEST = 10  # The number of tests to run every TEST_FREQUENCY episodes
 epsilon = INITIAL_EPSILON
-STATE_DIM = env.observation_space.shape[0]
-ACTION_DIM = env.action_space.n
 
 ACTION_DICT = [np.array([1, 0]), np.array([0, 1])]
 
@@ -37,6 +35,7 @@ class CartQ:
 
         self.model = model
 
+
 def to_row(array):
     if array.ndim == 1:
         return array.reshape(1, len(array))
@@ -52,9 +51,8 @@ def action_to_mask(action, action_space):
         mdict[i] = submask
 
     for i in range(action_space):
-        msk[action==i] = mdict[i]
+        msk[action == i] = mdict[i]
     return msk
-
 
 
 class CartQCustom:
@@ -98,37 +96,96 @@ class CartQCustom:
 
         output = np.array([output])
 
-        self.model.fit([state, action], output)
+        self.model.fit([state, action], output, verbose=False)
 
     def pred_qval(self, state):
-        return self.qvalmod.predict(to_row(state))
+        return self.qvalmod.predict(to_row(np.array(state)))
 
 
 class Agent:
     def __init__(self):
         self.env = gym.make(ENV_NAME)
-        self.Q = CartQCustom(env.observation_space.shape[0], env.action_space.n)
+        self.Q = CartQCustom(self.env.observation_space.shape[0],
+                             self.env.action_space.n)
 
     def get_action(self, state, epsilon):
 
-        if epsilon > random.random():
+        if epsilon <= random.random():
             # exploit
             qvals = self.Q.pred_qval(state)
             return np.argmax(qvals)
         else:
-            # expore
+            # explore
             return self.env.action_space.sample()
 
-    def train(self, num_episodes):
-        epsilon = INITIAL_EPSILON
+    def train(self, num_episodes, epsilon=INITIAL_EPSILON, final_eps=FINAL_EPSILON):
+        eps_decay = (epsilon - final_eps) / num_episodes
+        maxsteps = 0
+        avesteps = 0
+
+        for i in range(num_episodes):
+            done = False
+            state = np.array(self.env.reset())
+            epsilon -= eps_decay
+            numsteps = 0
+
+            if i % TEST_FREQUENCY == 0:
+                print(f"{i}: eps: {epsilon:.2f}, record: {maxsteps}, ave: {avesteps/TEST_FREQUENCY}")
+                avesteps = 0
+
+            while not done:
+                act = self.get_action(state, epsilon)
+                next_state, reward, done, _ = self.env.step(act)
+
+                if done:
+                    target = reward
+                else:
+                    numsteps += 1
+                    nextQvals = self.Q.pred_qval(next_state)
+                    target = reward + GAMMA * np.max(nextQvals)
+
+                self.Q.fit_single(state, act, target)
+                state = np.array(next_state)
+
+            maxsteps = max(maxsteps, numsteps)
+            avesteps += numsteps
+
+    def run(self, render=True):
+        done = False
+        epsilon = 0.05
+        state = np.array(self.env.reset())
+        numsteps = 0
+        while not done:
+            if render:
+                self.env.render()
+
+            act = self.get_action(state, epsilon)
+            next_state, reward, done, _ = self.env.step(act)
+
+            if not done:
+                numsteps += 1
+
+            state = np.array(next_state)
+
+        print(f"Numsteps : {numsteps}")
 
 
+def main():
+    ag = Agent()
+    eps = INITIAL_EPSILON
 
-
+    for i in range(10):
+        ag.train(1000, eps, eps - INITIAL_EPSILON / 10)
+        ag.run()
+        eps -= INITIAL_EPSILON / 10
 
 
 if __name__ == '__main__':
-    Q = CartQCustom(env.observation_space.shape[0], env.action_space.n)
+    main()
+
+
+def test_nq():
+    Q = CartQCustom(4, 2)
     state = np.random.random((100, 4))
     rds = np.random.random(100)
     ls = []
@@ -144,4 +201,3 @@ if __name__ == '__main__':
         Q.fit_single(np.random.random(4), np.random.randint(2), np.random.random())
 
     print(Q.pred_qval(np.random.random(4)))
-
