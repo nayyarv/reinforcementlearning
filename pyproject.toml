@@ -9,7 +9,6 @@ license = "MIT"
 python = "^3.6"
 tensorflow = "^1.10.1"
 torch = "0.4.1"
-gym = "^0.10.5"
 numpy = "^1"
 scipy = "^1"
 attrs = "^18"
@@ -22,15 +21,12 @@ moviepy = "^0.2.3"
 theano = "^1.0"
 keras = "^2.2"
 jupyter = "^1.0"
+rlenvs = {git = "https://github.com/star-ai/rl-environments.git"}
+gym_bandits = {git = "https://github.com/JKCooper2/gym-bandits.git"}
+seaborn = "^0.9.0"
+stable-baselines = "^2.1"
+gym = {version = "^0.10.8",extras = ["atari"]}
 
 [tool.poetry.dev-dependencies]
 pytest = "^3.8"
 pip = "*"
-
-[[tool.poetry.source]]
-name="rlenvs"
-url="https://github.com/star-ai/rl-environments.git"
-
-[[tool.poetry.source]]
-name="gym_bandits"
-url="https://github.com/JKCooper2/gym-bandits.git"

@@ -84,6 +84,7 @@ class CartQCustom:
         return self.qvalmod.predict(to_row(np.array(state)))
 
 
+
 class Agent:
     def __init__(self):
         self.env = gym.make(ENV_NAME)

@@ -56,7 +56,7 @@ def sample():
 
 alpha = 0.2
 gamma = 0.99
-
+from gym.wrappers import Monitor
 
 class Agent:
     def __init__(self, env, bins=10):
